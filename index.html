@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0F1216">
+<title>Training Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0F1216;
+    --surface:#181C23;
+    --surface-2:#20252E;
+    --border:#2B313B;
+    --text:#EEF1F5;
+    --muted:#98A2B0;
+    --muted-2:#6B7480;
+    --accent:#FF7A45;
+    --radius:14px;
+    --display:'Barlow Condensed', 'Arial Narrow', sans-serif;
+    --body:'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  }
+  [data-theme="push"]{--accent:#FF7A45;}
+  [data-theme="pull"]{--accent:#35C6D8;}
+  [data-theme="mixed"]{--accent:#B08CFF;}
+  [data-theme="stretch"]{--accent:#8FD14F;}
+
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+  html{-webkit-text-size-adjust:100%;}
+  body{
+    background:var(--bg);
+    color:var(--text);
+    font-family:var(--body);
+    line-height:1.45;
+    padding-bottom:120px;
+    overflow-x:hidden;
+  }
+
+  /* ---------- Header ---------- */
+  header{
+    padding:22px 18px 14px;
+    border-bottom:1px solid var(--border);
+  }
+  .eyebrow{
+    font-family:var(--display);
+    text-transform:uppercase;
+    letter-spacing:.18em;
+    font-size:13px;
+    color:var(--accent);
+    font-weight:600;
+    transition:color .25s ease;
+  }
+  h1{
+    font-family:var(--display);
+    text-transform:uppercase;
+    letter-spacing:.01em;
+    font-size:34px;
+    font-weight:700;
+    line-height:.98;
+    margin-top:2px;
+  }
+  .sub{color:var(--muted);font-size:13.5px;margin-top:7px;}
+
+  /* ---------- Tab switcher ---------- */
+  nav{
+    position:sticky;top:0;z-index:40;
+    background:rgba(15,18,22,.92);
+    backdrop-filter:blur(10px);
+    -webkit-backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--border);
+    display:flex;
+    padding:10px 10px;
+    gap:7px;
+  }
+  .tab{
+    flex:1;
+    font-family:var(--display);
+    text-transform:uppercase;
+    letter-spacing:.05em;
+    font-weight:600;
+    font-size:15px;
+    color:var(--muted);
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:11px;
+    padding:11px 4px 9px;
+    cursor:pointer;
+    transition:all .2s ease;
+    min-height:46px;
+    position:relative;
+  }
+  .tab .lab{display:block;}
+  .tab .key{display:block;font-family:var(--body);font-size:9.5px;letter-spacing:.04em;color:var(--muted-2);font-weight:500;margin-top:1px;}
+  .tab[data-k="push"].active{color:#FF7A45;border-color:#FF7A45;background:rgba(255,122,69,.12);}
+  .tab[data-k="pull"].active{color:#35C6D8;border-color:#35C6D8;background:rgba(53,198,216,.12);}
+  .tab[data-k="mixed"].active{color:#B08CFF;border-color:#B08CFF;background:rgba(176,140,255,.12);}
+  .tab[data-k="stretch"].active{color:#8FD14F;border-color:#8FD14F;background:rgba(143,209,79,.12);}
+  .tab.active .key{color:inherit;opacity:.7;}
+
+  /* ---------- Panels ---------- */
+  main{padding:16px 14px 0;}
+  .panel{display:none;}
+  .panel.active{display:block;animation:fade .25s ease;}
+  @keyframes fade{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:none;}}
+
+  .panel-head{display:flex;align-items:baseline;gap:10px;margin:4px 2px 14px;}
+  .panel-head h2{
+    font-family:var(--display);text-transform:uppercase;
+    font-size:23px;font-weight:700;letter-spacing:.02em;
+  }
+  .panel-head .meta{color:var(--muted);font-size:12.5px;margin-left:auto;text-align:right;}
+
+  /* ---------- Exercise card ---------- */
+  .card{
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-left:3px solid var(--accent);
+    border-radius:var(--radius);
+    padding:13px 14px 12px;
+    margin-bottom:11px;
+  }
+  .card-top{display:flex;align-items:flex-start;gap:10px;}
+  .ex-name{font-size:17px;font-weight:600;flex:1;line-height:1.25;}
+  .scheme{
+    font-family:var(--display);font-weight:700;font-size:18px;
+    color:var(--accent);white-space:nowrap;letter-spacing:.02em;
+    padding-top:1px;
+  }
+  .superset{
+    font-size:11.5px;color:var(--muted);margin-top:5px;
+    display:flex;align-items:center;gap:6px;
+  }
+  .superset b{color:var(--text);font-weight:600;}
+  .ss-tag{
+    font-family:var(--display);font-size:10px;letter-spacing:.08em;font-weight:700;
+    text-transform:uppercase;color:var(--accent);
+    border:1px solid var(--accent);border-radius:5px;padding:1px 5px;
+    opacity:.85;
+  }
+
+  /* set dots */
+  .dots{display:flex;gap:7px;margin-top:11px;align-items:center;}
+  .dots .dlabel{font-size:10.5px;color:var(--muted-2);text-transform:uppercase;letter-spacing:.08em;font-weight:600;font-family:var(--display);}
+  .dot{
+    width:26px;height:26px;border-radius:50%;
+    border:2px solid var(--border);background:transparent;
+    cursor:pointer;transition:all .15s ease;flex:none;
+  }
+  .dot.done{background:var(--accent);border-color:var(--accent);}
+
+  /* swap (details) */
+  details.swap{margin-top:11px;border-top:1px dashed var(--border);padding-top:10px;}
+  details.swap summary{
+    list-style:none;cursor:pointer;
+    font-family:var(--display);text-transform:uppercase;letter-spacing:.07em;
+    font-size:12.5px;font-weight:600;color:var(--accent);
+    display:flex;align-items:center;gap:7px;user-select:none;
+  }
+  details.swap summary::-webkit-details-marker{display:none;}
+  .chev{transition:transform .2s ease;display:inline-block;font-size:11px;}
+  details[open] .chev{transform:rotate(90deg);}
+  .swap-body{margin-top:10px;display:flex;flex-direction:column;gap:9px;}
+  .swap-row{display:flex;gap:9px;align-items:flex-start;}
+  .swap-row .k{
+    font-family:var(--display);font-size:10px;font-weight:700;letter-spacing:.06em;
+    text-transform:uppercase;flex:none;width:74px;padding-top:2px;
+  }
+  .swap-row.like .k{color:var(--accent);}
+  .swap-row.bare .k{color:var(--muted);}
+  .swap-row .v{font-size:13.5px;color:var(--text);line-height:1.4;}
+  .swap-row.bare .v{color:var(--muted);}
+
+  /* ---------- callout ---------- */
+  .callout{
+    background:var(--surface-2);
+    border:1px solid var(--border);
+    border-radius:var(--radius);
+    padding:14px 15px;margin:4px 0 16px;
+  }
+  .callout h3{
+    font-family:var(--display);text-transform:uppercase;letter-spacing:.06em;
+    font-size:14px;color:var(--accent);font-weight:700;margin-bottom:9px;
+  }
+  .callout ul{list-style:none;display:flex;flex-direction:column;gap:8px;}
+  .callout li{font-size:13.5px;color:var(--muted);padding-left:16px;position:relative;line-height:1.45;}
+  .callout li::before{content:"";position:absolute;left:0;top:8px;width:6px;height:6px;border-radius:50%;background:var(--accent);}
+  .callout li b{color:var(--text);font-weight:600;}
+
+  /* ---------- stretch ---------- */
+  .grp-head{
+    display:flex;align-items:center;gap:10px;margin:18px 2px 11px;
+  }
+  .grp-head .t{font-family:var(--display);text-transform:uppercase;font-size:16px;font-weight:700;letter-spacing:.04em;}
+  .grp-head .time{font-size:11.5px;color:var(--muted-2);font-family:var(--display);letter-spacing:.05em;}
+  .grp-head .line{flex:1;height:1px;background:var(--border);}
+
+  .stretch{
+    background:var(--surface);border:1px solid var(--border);
+    border-radius:var(--radius);padding:12px 13px;margin-bottom:9px;
+    display:flex;gap:12px;align-items:flex-start;
+  }
+  .stretch .num{
+    font-family:var(--display);font-weight:700;font-size:17px;color:var(--muted-2);
+    flex:none;width:24px;text-align:center;padding-top:1px;
+  }
+  .stretch .body{flex:1;}
+  .stretch .row1{display:flex;align-items:baseline;gap:8px;}
+  .stretch .nm{font-size:15.5px;font-weight:600;flex:1;line-height:1.25;}
+  .stretch .dur{font-family:var(--display);font-weight:700;font-size:14px;color:var(--accent);white-space:nowrap;}
+  .stretch .desc{font-size:12.5px;color:var(--muted);margin-top:4px;line-height:1.45;}
+  .star{
+    display:inline-block;font-size:10px;font-weight:700;font-family:var(--display);
+    letter-spacing:.05em;color:#0F1216;background:var(--accent);
+    border-radius:5px;padding:1px 6px;margin-left:2px;vertical-align:middle;
+  }
+
+  /* ---------- rest timer ---------- */
+  #timerFab{
+    position:fixed;right:16px;bottom:18px;z-index:60;
+    width:58px;height:58px;border-radius:50%;
+    background:var(--accent);color:#0F1216;border:none;cursor:pointer;
+    font-family:var(--display);font-weight:700;font-size:12px;letter-spacing:.04em;
+    text-transform:uppercase;box-shadow:0 6px 20px rgba(0,0,0,.45);
+    display:flex;align-items:center;justify-content:center;flex-direction:column;
+    transition:background .25s ease, transform .15s ease;
+  }
+  #timerFab:active{transform:scale(.94);}
+  #timerFab .tlab{font-size:9px;opacity:.75;}
+  #timerFab.running{font-size:18px;}
+
+  #timerCard{
+    position:fixed;right:16px;bottom:86px;z-index:60;
+    background:var(--surface-2);border:1px solid var(--border);
+    border-radius:18px;padding:14px;width:220px;
+    box-shadow:0 10px 32px rgba(0,0,0,.5);
+    transform:translateY(12px) scale(.96);opacity:0;pointer-events:none;
+    transition:all .2s ease;
+  }
+  #timerCard.show{transform:none;opacity:1;pointer-events:auto;}
+  #timerCard .disp{
+    font-family:var(--display);font-weight:700;font-size:46px;text-align:center;
+    line-height:1;color:var(--accent);font-variant-numeric:tabular-nums;
+  }
+  #timerCard .presets{display:flex;gap:6px;margin:12px 0 8px;}
+  #timerCard .presets button{
+    flex:1;background:var(--surface);border:1px solid var(--border);color:var(--text);
+    border-radius:9px;padding:9px 0;font-family:var(--display);font-weight:600;font-size:15px;
+    cursor:pointer;
+  }
+  #timerCard .presets button:active{background:var(--accent);color:#0F1216;}
+  #timerCard .ctrl{display:flex;gap:6px;}
+  #timerCard .ctrl button{
+    flex:1;border:none;border-radius:9px;padding:9px 0;cursor:pointer;
+    font-family:var(--display);font-weight:600;font-size:13px;text-transform:uppercase;letter-spacing:.05em;
+  }
+  #startBtn{background:var(--accent);color:#0F1216;}
+  #resetBtn{background:var(--surface);color:var(--muted);border:1px solid var(--border)!important;}
+
+  footer{padding:20px 16px 8px;color:var(--muted-2);font-size:11.5px;text-align:center;line-height:1.5;}
+
+  @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;}}
+  @media (min-width:560px){
+    main{max-width:620px;margin:0 auto;}
+    header,nav{max-width:620px;margin-left:auto;margin-right:auto;}
+    nav{top:0;}
+  }
+</style>
+</head>
+<body data-theme="push">
+
+<header>
+  <div class="eyebrow" id="eyebrow">Upper Body · Core · Mobility</div>
+  <h1>Training Dashboard</h1>
+  <div class="sub">2 lifts/week — rotate A → B → C. ~40 min each. Legs handled on the bike.</div>
+</header>
+
+<nav id="nav">
+  <button class="tab active" data-k="push" data-panel="push"><span class="lab">A</span><span class="key">Push</span></button>
+  <button class="tab" data-k="pull" data-panel="pull"><span class="lab">B</span><span class="key">Pull</span></button>
+  <button class="tab" data-k="mixed" data-panel="mixed"><span class="lab">C</span><span class="key">Mixed</span></button>
+  <button class="tab" data-k="stretch" data-panel="stretch"><span class="lab">Stretch</span><span class="key">15–20 min</span></button>
+</nav>
+
+<main id="main"></main>
+
+<button id="timerFab" aria-label="Rest timer"><span id="fabText">REST</span><span class="tlab" id="fabLab">timer</span></button>
+<div id="timerCard">
+  <div class="disp" id="disp">1:30</div>
+  <div class="presets">
+    <button data-s="45">0:45</button>
+    <button data-s="60">1:00</button>
+    <button data-s="90">1:30</button>
+    <button data-s="120">2:00</button>
+  </div>
+  <div class="ctrl">
+    <button id="startBtn">Start</button>
+    <button id="resetBtn">Reset</button>
+  </div>
+</div>
+
+<footer>
+  Built from your plan. Hold static stretches to mild tension, never pain.<br>Tap any exercise's <b>Swap</b> if the kit's taken. Set dots reset when you reload.
+</footer>
+
+<script>
+/* ---------------- DATA ---------------- */
+const sessions = {
+  push: {
+    name:"Session A — Push", meta:"Push + core · superset where marked",
+    ex:[
+      {n:"Bench press", s:"4 × 5–8", sets:4,
+        like:"DB bench press / machine chest press",
+        bare:"Push-ups — add a backpack or elevate feet to load it up"},
+      {n:"DB shoulder press", s:"3 × 8–10", sets:3, ss:"Chest-supported row",
+        like:"Barbell or machine overhead press / Arnold press",
+        bare:"Pike push-ups"},
+      {n:"Chest-supported row", s:"3 × 8–10", sets:3,
+        like:"Single-arm DB row off a bench / seated machine row",
+        bare:"Inverted row under a bar or Smith bar"},
+      {n:"Incline DB press", s:"3 × 10–12", sets:3,
+        like:"Incline barbell or machine press / low-to-high cable fly",
+        bare:"Decline push-ups (feet on a box)"},
+      {n:"Triceps pushdown", s:"2 × 12", sets:2, ss:"Hanging knee raises",
+        like:"Overhead cable/DB extension / skullcrushers",
+        bare:"Bench dips or diamond (close-grip) push-ups"},
+      {n:"Hanging knee raises", s:"3 × 12–15", sets:3,
+        like:"Captain's chair / decline-bench knee raises",
+        bare:"Lying leg raises or reverse crunches"}
+    ]
+  },
+  pull:{
+    name:"Session B — Pull", meta:"Pull + core · superset where marked",
+    ex:[
+      {n:"Pull-ups or lat pulldown", s:"4 × 6–10", sets:4,
+        like:"Assisted pull-up machine / band-assisted pull-ups",
+        bare:"Straight-arm band pulldown, or inverted rows"},
+      {n:"Seated cable row", s:"3 × 10–12", sets:3, ss:"DB bench / push-ups",
+        like:"Chest-supported machine row / DB bent-over row",
+        bare:"Resistance-band row, anchored at a door"},
+      {n:"DB bench or push-ups", s:"3 × 10–12", sets:3,
+        like:"Machine chest press / cable fly",
+        bare:"DB floor press, or standard push-ups"},
+      {n:"Face pulls", s:"3 × 15", sets:3,
+        like:"Reverse pec-deck / bent-over rear-delt DB fly",
+        bare:"Band pull-aparts"},
+      {n:"Barbell or DB curl", s:"2 × 12", sets:2, ss:"Side plank",
+        like:"Cable curl / machine curl",
+        bare:"Band curls, or hammer curls with any DBs"},
+      {n:"Side plank", s:"3 × 40s / side", sets:3,
+        like:"Suitcase carry (one heavy DB) / Pallof press",
+        bare:"Side plank with top-leg raise, or oblique crunches"}
+    ]
+  },
+  mixed:{
+    name:"Session C — Mixed", meta:"Heavier day · superset where marked",
+    ex:[
+      {n:"Overhead press (standing)", s:"4 × 5–6", sets:4, ss:"Barbell row",
+        like:"Seated DB press / machine shoulder press / landmine press",
+        bare:"Pike push-ups, or DB push press"},
+      {n:"Barbell row", s:"3 × 6–8", sets:3,
+        like:"Two-arm or single-arm DB row / T-bar or landmine row",
+        bare:"Chest-supported DB row, or inverted rows"},
+      {n:"Dips or close-grip bench", s:"3 × 8–10", sets:3,
+        like:"Assisted dip machine / DB close-grip floor press",
+        bare:"Bench dips or diamond push-ups"},
+      {n:"Incline curl", s:"2 × 12", sets:2, ss:"Ab wheel",
+        like:"Standing DB or cable curl / preacher-machine curl",
+        bare:"Band curls"},
+      {n:"Ab wheel", s:"3 × 8–12", sets:3,
+        like:"Barbell rollout / stability-ball rollout",
+        bare:"Long-lever plank (arms forward) or bodysaw"},
+      {n:"Cable woodchop", s:"3 × 12 / side", sets:3,
+        like:"Band woodchop / medicine-ball rotational throw",
+        bare:"Pallof press with a band"}
+    ]
+  }
+};
+
+const stretch = {
+  meta:"Hold 30–45s · ease to mild tension · ~17 min unhurried",
+  groups:[
+    {t:"Warm up", time:"≈2 min", items:[
+      {nm:"Cat–cow", dur:"8–10 reps", desc:"On all fours, alternate arching and rounding the spine. Wakes up the whole back."},
+      {nm:"World's greatest stretch", dur:"5 / side", desc:"From a lunge, drop the back knee, reach same-side elbow to the floor, then rotate the other arm to the ceiling. Hips, groin and upper-back rotation in one."}
+    ]},
+    {t:"Lower body — cyclist's tight spots", time:"≈8 min", items:[
+      {nm:"Kneeling hip flexor stretch", dur:"45s / side", star:true, desc:"Half-kneel, tuck the pelvis under, push hips forward. The big one for you — riding shortens these constantly."},
+      {nm:"Hamstring stretch", dur:"45s / side", desc:"Hinge at the hips with a flat back over one straight leg. Standing or seated."},
+      {nm:"Figure-4 glute stretch", dur:"45s / side", desc:"On your back, ankle across the opposite knee, pull the thigh toward your chest. Pigeon pose works too."},
+      {nm:"Standing quad", dur:"30s / side", desc:"Heel to glute, knee pointing down, hips forward."},
+      {nm:"Calf stretch at a wall", dur:"30s / side", desc:"Back leg straight, heel down, lean in."}
+    ]},
+    {t:"Spine & lower back", time:"≈3 min", items:[
+      {nm:"Supine spinal twist", dur:"45s / side", desc:"On your back, drop both knees to one side, arms wide, look the other way. Decompresses after rides and sitting."},
+      {nm:"Child's pose", dur:"45s", desc:"Sit back onto heels, arms forward. Walk the hands to each side to catch the lats (+20s/side)."}
+    ]},
+    {t:"Upper body — undo the hunch", time:"≈4 min", items:[
+      {nm:"Doorway pec stretch", dur:"45s / side", star:true, desc:"Forearm on the frame, step through and rotate away. Counters all the pressing."},
+      {nm:"Thread the needle", dur:"45s / side", desc:"From all fours, slide one arm under the other, rest the shoulder down. Opens the upper back."},
+      {nm:"Cross-body shoulder + overhead triceps", dur:"30s each", desc:"One stretch then the other, both sides."},
+      {nm:"Neck", dur:"20s / side", desc:"Gently tilt ear toward each shoulder, then chin to chest for 20s."}
+    ]}
+  ],
+  notes:[
+    "<b>Cold (desk or first thing):</b> keep it gentle, lean on the warm-up moves; save deep holds for when you're warm or post-ride.",
+    "<b>Only 3 minutes post-ride?</b> Do the hip flexor, glute and hamstring (3–5) — highest value.",
+    "<b>Work break:</b> doorway pec + thread the needle (10–11) fight the same forward-shoulder posture as benching."
+  ]
+};
+
+const stuckRules = [
+  "<b>2 dumbbells + a bench</b> replicate almost any press or row on here.",
+  "<b>One resistance band</b> covers every pull and most of the core work.",
+  "<b>Whole rack mobbed?</b> Run the session off one set of DBs: floor press, single-arm row, shoulder press, curl, plank.",
+  "<b>Bodyweight swaps</b> mean higher reps (12–20+) — just push close to failure so the lighter load still counts."
+];
+
+/* ---------------- RENDER ---------------- */
+const main = document.getElementById('main');
+
+function sessionPanel(key){
+  const d = sessions[key];
+  let html = `<section class="panel${key==='push'?' active':''}" id="panel-${key}">`;
+  html += `<div class="panel-head"><h2>${d.name}</h2><div class="meta">${d.meta}</div></div>`;
+  d.ex.forEach((e,i)=>{
+    html += `<div class="card">
+      <div class="card-top">
+        <div class="ex-name">${e.n}</div>
+        <div class="scheme">${e.s}</div>
+      </div>`;
+    if(e.ss){ html += `<div class="superset"><span class="ss-tag">Superset</span> with <b>${e.ss}</b></div>`; }
+    html += `<div class="dots"><span class="dlabel">Sets</span>`;
+    for(let k=0;k<e.sets;k++){ html += `<button class="dot" aria-label="set ${k+1}"></button>`; }
+    html += `</div>`;
+    html += `<details class="swap"><summary><span class="chev">▶</span> Swap — kit taken / not available</summary>
+      <div class="swap-body">
+        <div class="swap-row like"><span class="k">Like-for-like</span><span class="v">${e.like}</span></div>
+        <div class="swap-row bare"><span class="k">Bare-bones</span><span class="v">${e.bare}</span></div>
+      </div></details>`;
+    html += `</div>`;
+  });
+  // session footer tips
+  html += `<div class="callout"><h3>Run it in 40 min</h3><ul>
+    <li>Do the supersets as marked — work one while the other rests.</li>
+    <li>Rest <b>~90s</b> on the heavy 4–5 rep sets, <b>45–60s</b> on the rest.</li>
+    <li>Warm up: band pull-aparts + a light first set. No long ramp needed.</li>
+    <li>Last exercise is overflow — first thing to cut on a tight day.</li>
+  </ul></div>`;
+  html += `<div class="callout"><h3>Stuck for equipment?</h3><ul>${stuckRules.map(r=>`<li>${r}</li>`).join('')}</ul></div>`;
+  html += `</section>`;
+  return html;
+}
+
+function stretchPanel(){
+  let html = `<section class="panel" id="panel-stretch">`;
+  html += `<div class="panel-head"><h2>Stretch & Mobility</h2><div class="meta">${stretch.meta}</div></div>`;
+  stretch.groups.forEach(g=>{
+    html += `<div class="grp-head"><span class="t">${g.t}</span><span class="line"></span><span class="time">${g.time}</span></div>`;
+    g.items.forEach((it,idx)=>{
+      html += `<div class="stretch">
+        <div class="num">${globalStretchNum()}</div>
+        <div class="body">
+          <div class="row1"><span class="nm">${it.nm}${it.star?' <span class="star">Priority</span>':''}</span><span class="dur">${it.dur}</span></div>
+          <div class="desc">${it.desc}</div>
+        </div></div>`;
+    });
+  });
+  html += `<div class="callout"><h3>Short on time?</h3><ul>${stretch.notes.map(n=>`<li>${n}</li>`).join('')}</ul></div>`;
+  html += `</section>`;
+  return html;
+}
+let _sn=0; function globalStretchNum(){ _sn++; return _sn; }
+
+main.innerHTML = sessionPanel('push') + sessionPanel('pull') + sessionPanel('mixed') + stretchPanel();
+
+/* ---------------- TABS ---------------- */
+const themeName = {push:"Push + Core",pull:"Pull + Core",mixed:"Heavier Mix",stretch:"Mobility Flow"};
+document.querySelectorAll('.tab').forEach(tab=>{
+  tab.addEventListener('click',()=>{
+    const k = tab.dataset.panel;
+    document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+    tab.classList.add('active');
+    document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+    document.getElementById('panel-'+k).classList.add('active');
+    document.body.dataset.theme = k;
+    document.getElementById('eyebrow').textContent = themeName[k];
+    window.scrollTo({top:0,behavior:'smooth'});
+  });
+});
+
+/* ---------------- SET DOTS ---------------- */
+main.addEventListener('click',e=>{
+  if(e.target.classList.contains('dot')){ e.target.classList.toggle('done'); }
+});
+
+/* ---------------- REST TIMER ---------------- */
+const fab=document.getElementById('timerFab'),
+      card=document.getElementById('timerCard'),
+      disp=document.getElementById('disp'),
+      startBtn=document.getElementById('startBtn'),
+      resetBtn=document.getElementById('resetBtn'),
+      fabText=document.getElementById('fabText'),
+      fabLab=document.getElementById('fabLab');
+let total=90, remain=90, ticking=false, iv=null, cardOpen=false;
+
+function fmt(s){ const m=Math.floor(s/60); const ss=s%60; return m+":"+(ss<10?"0":"")+ss; }
+function paint(){ disp.textContent=fmt(remain); }
+function openCard(){ cardOpen=true; card.classList.add('show'); }
+function closeCard(){ cardOpen=false; card.classList.remove('show'); }
+
+fab.addEventListener('click',()=>{
+  if(ticking){ // tapping the running fab opens the card to control it
+    openCard();
+  } else {
+    cardOpen ? closeCard() : openCard();
+  }
+});
+
+document.querySelectorAll('#timerCard .presets button').forEach(b=>{
+  b.addEventListener('click',()=>{
+    total=remain=parseInt(b.dataset.s,10);
+    stop(); paint();
+  });
+});
+
+function tick(){
+  remain--; paint(); updateFab();
+  if(remain<=0){ stop(); done(); }
+}
+function start(){
+  if(ticking||remain<=0) return;
+  ticking=true; startBtn.textContent="Pause";
+  iv=setInterval(tick,1000); updateFab();
+}
+function pause(){ ticking=false; startBtn.textContent="Start"; clearInterval(iv); updateFab(); }
+function stop(){ ticking=false; startBtn.textContent="Start"; clearInterval(iv); updateFab(); }
+
+startBtn.addEventListener('click',()=>{ ticking?pause():start(); });
+resetBtn.addEventListener('click',()=>{ remain=total; stop(); paint(); });
+
+function updateFab(){
+  if(ticking){ fab.classList.add('running'); fabText.textContent=fmt(remain); fabLab.textContent="rest"; }
+  else { fab.classList.remove('running'); fabText.textContent="REST"; fabLab.textContent="timer"; }
+}
+function done(){
+  fab.classList.remove('running'); fabText.textContent="GO"; fabLab.textContent="";
+  if(navigator.vibrate) navigator.vibrate([200,100,200]);
+  try{
+    const ctx=new (window.AudioContext||window.webkitAudioContext)();
+    [0,0.18,0.36].forEach(t=>{
+      const o=ctx.createOscillator(),g=ctx.createGain();
+      o.frequency.value=880; o.connect(g); g.connect(ctx.destination);
+      g.gain.setValueAtTime(0.001,ctx.currentTime+t);
+      g.gain.exponentialRampToValueAtTime(0.4,ctx.currentTime+t+0.02);
+      g.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+t+0.15);
+      o.start(ctx.currentTime+t); o.stop(ctx.currentTime+t+0.16);
+    });
+  }catch(err){}
+  setTimeout(()=>{ remain=total; paint(); updateFab(); },2500);
+}
+paint();
+</script>
+</body>
+</html>
