@@ -1,0 +1,58 @@
+# Publishes the repo to GitHub Pages:
+#   /            the existing Training Dashboard (root files, unchanged)
+#   /36hard/     the 36 Hard app, built with Vite
+# Requires Settings → Pages → Source: "GitHub Actions".
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: 36hard
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: 36hard/package-lock.json
+      - run: npm ci
+      - run: npm test
+      - run: npm run build
+        env:
+          BASE_PATH: /${{ github.event.repository.name }}/36hard/
+      - name: Assemble site
+        working-directory: .
+        run: |
+          mkdir _site
+          rsync -a --exclude '.git' --exclude '.github' --exclude '36hard' --exclude '_site' --exclude '.gitignore' ./ _site/
+          cp -r 36hard/dist _site/36hard
+          touch _site/.nojekyll
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
